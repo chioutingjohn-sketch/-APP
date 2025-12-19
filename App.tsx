@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import DateSelector from './components/DateSelector.tsx';
 import ReportDisplay from './components/ReportDisplay.tsx';
@@ -6,7 +7,6 @@ import { LoadingState, ReportType } from './types.ts';
 
 const App: React.FC = () => {
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  
   const [startDate, setStartDate] = useState<string>(() => {
     const d = new Date();
     d.setMonth(d.getMonth() - 1);
@@ -17,6 +17,9 @@ const App: React.FC = () => {
   const [reportContent, setReportContent] = useState<string>('');
   const [reportSources, setReportSources] = useState<Array<{ title: string; url: string }>>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Removed manual API key selection and UI to comply with guidelines for text models.
+  // The API key is assumed to be provided via process.env.API_KEY by the environment.
 
   const handleGenerate = async (type: ReportType) => {
     if (!date) return;
