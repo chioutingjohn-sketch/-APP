@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { ReportType } from "../types.ts";
 
@@ -14,8 +13,14 @@ You are the Chief Rates Strategist (Director Level) at a major global investment
 `;
 
 export const generateReport = async (date: string, type: ReportType, startDate?: string): Promise<{ text: string, sources: any[] }> => {
-  // Always use a new GoogleGenAI instance with the API key from process.env.API_KEY directly.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Use VITE_GEMINI_API_KEY for Vite/Zeabur environments, with process.env.API_KEY as fallback.
+  const apiKey = (import.meta as any).env?.VITE_GEMINI_API_KEY || process.env.API_KEY;
+
+  if (!apiKey) {
+    throw new Error("找不到 API Key。請確保環境變數 VITE_GEMINI_API_KEY 已正確設定。");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
 
   let specificRequest = "";
   let searchContext = "";
@@ -52,9 +57,10 @@ export const generateReport = async (date: string, type: ReportType, startDate?:
       },
     });
 
-    // Access the generated text directly through the .text property
+    // Directly access the generated text content from the response
     const text = response.text || "No content generated.";
-    // Extract website URLs from groundingChunks as required when using googleSearch grounding
+    
+    // Extract website URLs from groundingChunks to display references
     const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     
     const uniqueUrls = new Set<string>();
