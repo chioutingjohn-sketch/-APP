@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DateSelector from './components/DateSelector.tsx';
 import ReportDisplay from './components/ReportDisplay.tsx';
@@ -17,9 +16,6 @@ const App: React.FC = () => {
   const [reportContent, setReportContent] = useState<string>('');
   const [reportSources, setReportSources] = useState<Array<{ title: string; url: string }>>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Removed manual API key selection and UI to comply with guidelines for text models.
-  // The API key is assumed to be provided via process.env.API_KEY by the environment.
 
   const handleGenerate = async (type: ReportType) => {
     if (!date) return;
@@ -58,7 +54,7 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="text-xs text-blue-200 bg-blue-900/50 px-3 py-1 rounded-full border border-blue-700/50 hidden sm:block">
-             Powered by Gemini 3 Pro
+             Powered by Gemini 3 Flash
           </div>
         </div>
       </nav>
