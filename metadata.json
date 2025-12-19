@@ -1,0 +1,5 @@
+{
+  "name": "US Bond Market Daily Brief",
+  "description": "A professional tool that generates US Treasury market summaries and weekly reports based on a selected date using Google Search Grounding.",
+  "requestFramePermissions": []
+}
