@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { ReportType } from "../types";
+import { ReportType } from "../types.ts";
 
 const SYSTEM_INSTRUCTION = `
 You are the Chief Rates Strategist (Director Level) at a major global investment bank. You are writing daily and monthly strategic research reports for institutional clients and internal trading desks in Taiwan (Traditional Chinese).
@@ -154,14 +154,13 @@ export const generateReport = async (date: string, type: ReportType, startDate?:
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         tools: [{ googleSearch: {} }],
-        temperature: 0.3, // Lower temperature for more consistent formatting
+        temperature: 0.3,
       },
     });
 
     const text = response.text || "No content generated.";
     const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     
-    // Deduplicate sources based on URL
     const uniqueUrls = new Set<string>();
     const formattedSources = sources
       .map((chunk: any) => ({
@@ -175,7 +174,6 @@ export const generateReport = async (date: string, type: ReportType, startDate?:
       });
 
     let finalText = text;
-    // Append sources to the text so they appear in the report body
     if (formattedSources.length > 0) {
       finalText += "\n\n---\n### 🔗 參考資料來源\n";
       formattedSources.forEach((source: any) => {

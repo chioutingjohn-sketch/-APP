@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import DateSelector from './components/DateSelector';
-import ReportDisplay from './components/ReportDisplay';
-import { generateReport } from './services/geminiService';
-import { LoadingState, ReportType } from './types';
+import DateSelector from './components/DateSelector.tsx';
+import ReportDisplay from './components/ReportDisplay.tsx';
+import { generateReport } from './services/geminiService.ts';
+import { LoadingState, ReportType } from './types.ts';
 
 const App: React.FC = () => {
-  // Default End Date: Today
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   
-  // Default Start Date: One month ago
   const [startDate, setStartDate] = useState<string>(() => {
     const d = new Date();
     d.setMonth(d.getMonth() - 1);
@@ -28,14 +26,12 @@ const App: React.FC = () => {
       return;
     }
 
-    // Reset state
     setLoadingState(LoadingState.LOADING);
     setErrorMsg(null);
     setReportContent('');
     setReportSources([]);
 
     try {
-      // Pass startDate for monthly reports
       const { text, sources } = await generateReport(date, type, startDate);
       setReportContent(text);
       setReportSources(sources);
@@ -49,7 +45,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Navbar */}
       <nav className="bg-bond-primary text-white shadow-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -65,10 +60,7 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        
-        {/* Intro / Hero */}
         <div className="mb-8 text-center sm:text-left">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">市場觀測站</h2>
           <p className="text-gray-600">
@@ -76,7 +68,6 @@ const App: React.FC = () => {
           </p>
         </div>
 
-        {/* Controls */}
         <DateSelector 
           selectedDate={date} 
           onDateChange={setDate}
@@ -86,7 +77,6 @@ const App: React.FC = () => {
           isLoading={loadingState === LoadingState.LOADING}
         />
 
-        {/* Error Message */}
         {loadingState === LoadingState.ERROR && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r shadow-sm animate-fade-in">
             <div className="flex items-start">
@@ -99,12 +89,10 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Results */}
         {loadingState === LoadingState.SUCCESS && (
            <ReportDisplay content={reportContent} sources={reportSources} />
         )}
 
-        {/* Empty State / Prompt */}
         {loadingState === LoadingState.IDLE && (
           <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
             <i className="fas fa-newspaper text-6xl text-gray-200 mb-4"></i>
@@ -113,7 +101,6 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-5xl mx-auto px-4 py-6 text-center text-sm text-gray-500">
           <p>© {new Date().getFullYear()} US Bond Market Brief Tool. Data retrieved via Google Search Grounding.</p>
