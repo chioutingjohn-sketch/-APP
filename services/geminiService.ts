@@ -87,7 +87,7 @@ export const generateReport = async (date: string, type: ReportType, startDate?:
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", 
+      model: "gemini-1.5-flash", 
       contents: prompt,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
