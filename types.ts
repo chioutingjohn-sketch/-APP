@@ -1,8 +1,8 @@
-export type ReportType = 'daily' | 'weekly' | 'monthly';
+
+export type ReportType = 'daily' | 'analysis';
 
 export interface ReportData {
   date: string;
-  isWeekly: boolean;
   content: string; // Markdown/Text content
   sources?: Array<{
     title: string;
