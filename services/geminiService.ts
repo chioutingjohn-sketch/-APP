@@ -61,12 +61,11 @@ const SYSTEM_INSTRUCTION = `
 `;
 
 export const generateReport = async (date: string, type: ReportType, startDate?: string): Promise<{ text: string, sources: any[] }> => {
-  // 優先讀取 Vite 環境變數 VITE_GEMINI_API_KEY，其次為 process.env.API_KEY
-  // @ts-ignore
-  const apiKey = import.meta.env?.VITE_GEMINI_API_KEY || process.env.API_KEY;
+  // 每次呼叫時才從 process.env 獲取 API KEY，確保與 API Key 選擇對話框同步
+  const apiKey = process.env.API_KEY;
 
   if (!apiKey) {
-    throw new Error("找不到 API Key。請確保在環境變數中設定了 VITE_GEMINI_API_KEY。");
+    throw new Error("API Key 未設定。請點擊右上角設定 API Key。");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -83,7 +82,7 @@ export const generateReport = async (date: string, type: ReportType, startDate?:
   const prompt = `
   請求類型：${type}
   具體要求：${specificRequest}
-  請使用 Google Search 獲取當前真實的市場數據，並嚴格遵循指定格式輸出。
+  請使用 Google Search 獲取當前真實的市場數據，並嚴格遵循指定格式輸出報告內容。
   `;
 
   try {
@@ -116,6 +115,10 @@ export const generateReport = async (date: string, type: ReportType, startDate?:
 
   } catch (error: any) {
     console.error("Gemini API Error:", error);
+    // 傳回更詳細的錯誤訊息以便偵錯
+    if (error.message?.includes("429") || error.message?.includes("quota")) {
+      throw new Error("配額已達上限 (429 Resource Exhausted)。請點擊右上角「設定 API Key」使用您自己的付費專案 Key 以獲得更多額度。");
+    }
     throw new Error(error.message || "生成報表時發生錯誤。");
   }
 };
