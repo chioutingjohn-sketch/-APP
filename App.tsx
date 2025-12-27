@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import DateSelector from './components/DateSelector.tsx';
 import ReportDisplay from './components/ReportDisplay.tsx';
 import { generateReport } from './services/geminiService.ts';
@@ -18,14 +18,8 @@ const App: React.FC = () => {
   const [reportSources, setReportSources] = useState<Array<{ title: string; url: string }>>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // 自動化流程：啟動時自動讀取當日數據並生成盤後速報
-  useEffect(() => {
-    handleGenerate('daily');
-  }, []);
-
   const handleGenerate = async (type: ReportType) => {
-    // 確保有日期資料
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    if (!date) return;
     
     if (type === 'analysis' && !startDate) {
       setErrorMsg("請選擇起始日期以生成市場分析報告");
@@ -39,7 +33,7 @@ const App: React.FC = () => {
     setReportSources([]);
 
     try {
-      const { text, sources } = await generateReport(targetDate, type, startDate);
+      const { text, sources } = await generateReport(date, type, startDate);
       setReportContent(text);
       setReportSources(sources);
       setLoadingState(LoadingState.SUCCESS);
@@ -58,17 +52,14 @@ const App: React.FC = () => {
             <i className="fas fa-chart-line text-2xl text-white"></i>
             <div>
               <h1 className="text-lg font-bold tracking-wide">US Bond Market Brief</h1>
-              <p className="text-[10px] text-blue-200 font-light tracking-wider">美債市場盤後速報自動化生成器</p>
+              <p className="text-[10px] text-blue-200 font-light tracking-wider">美債市場速報生成器</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-            </span>
-            <div className="text-xs text-blue-200 bg-blue-900/50 px-3 py-1.5 rounded-full border border-blue-700/50">
-               Gemini 3 Flash Online
+            <div className="text-xs text-blue-200 bg-blue-900/50 px-3 py-1.5 rounded-full border border-blue-700/50 flex items-center gap-1.5">
+               <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+               Gemini 3 Pro Precision Mode
             </div>
           </div>
         </div>
@@ -78,7 +69,7 @@ const App: React.FC = () => {
         <div className="mb-8 text-center sm:text-left">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">市場觀測站</h2>
           <p className="text-gray-600 max-w-2xl">
-            系統已自動讀取 API 配置，並於啟動時自動為您整理最新的美債市場動態。您也可以手動選擇不同日期或進行深度市場分析。
+            系統已切換至高精度分析模型。請選擇日期，系統將透過 Google Search Grounding 檢索權威數據並自動校準。
           </p>
         </div>
 
@@ -98,12 +89,6 @@ const App: React.FC = () => {
               <div className="flex-grow">
                 <p className="text-sm text-red-700 font-bold mb-1">生成失敗</p>
                 <p className="text-sm text-red-600">{errorMsg}</p>
-                <button 
-                  onClick={() => handleGenerate('daily')}
-                  className="mt-2 text-xs text-red-700 font-semibold underline hover:text-red-800"
-                >
-                  嘗試重新載入
-                </button>
               </div>
             </div>
           </div>
@@ -116,22 +101,22 @@ const App: React.FC = () => {
         {loadingState === LoadingState.LOADING && (
           <div className="text-center py-20 bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-bond-primary border-t-transparent mb-4"></div>
-            <p className="text-gray-600 font-medium">正在自動抓取並分析最新美債數據...</p>
-            <p className="text-xs text-gray-400 mt-2">使用 Google Search Grounding 技術進行即時校對</p>
+            <p className="text-gray-600 font-medium">正在啟動高精度數據校準並生成報表...</p>
+            <p className="text-xs text-gray-400 mt-2">交叉比對 U.S. Treasury, Bloomberg & CNBC 實時收盤數據</p>
           </div>
         )}
 
         {loadingState === LoadingState.IDLE && (
           <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
             <i className="fas fa-newspaper text-6xl text-gray-200 mb-4"></i>
-            <p className="text-gray-500 font-medium">請選擇報告類型並點擊生成按鈕</p>
+            <p className="text-gray-500 font-medium">請選擇上方報告類型並點擊「生成」按鈕開始</p>
           </div>
         )}
       </main>
 
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-5xl mx-auto px-4 py-6 text-center text-sm text-gray-500">
-          <p>© {new Date().getFullYear()} US Bond Market Brief Tool. 自動化數據處理流程。</p>
+          <p>© {new Date().getFullYear()} US Bond Market Brief Tool.</p>
           <p className="text-xs text-gray-400 mt-1">本報告僅供參考，投資人應獨立判斷並自負風險。</p>
         </div>
       </footer>

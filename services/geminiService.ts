@@ -1,14 +1,21 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { ReportType } from "../types.ts";
 
+// Fix: Removed interpolation of 'date' which was not in scope at top-level. 
+// Use a placeholder instead as the specific date is provided in the prompt.
 const SYSTEM_INSTRUCTION = `
 您是一位任職於全球頂尖投資銀行（如高盛、摩根大通）的資深利率策略長（Chief Rates Strategist）。您的任務是根據不同報表類型，撰寫專業且格式精美的美國公債市場報告。
 
+**數據精確性準則 (Data Precision Protocol):**
+- **嚴格校準：** 您必須使用 Google Search 工具，優先檢索並交叉比對美國財政部 (U.S. Department of the Treasury)、Bloomberg、Reuters 及 CNBC 的官方數據。
+- **數據真實性：** 嚴禁虛構數據。所有報表中的「收盤殖利率」、「變動 bps」及「經濟數據預估值」必須真實可靠。
+- **邏輯檢查：** 輸出前檢查殖利率曲線合理性。
+
 **共同規範：**
-- 使用繁體中文，口吻專業、老練且具備深度洞察力。
+- 使用繁體中文，口吻專業、老練。
 - 專業術語：多方 (Bulls)、空方 (Bears)、bps (基點)、repricing、期限溢價 (Term Premium)、殖利率曲線、陡峭化 (Steepening) 等。
-- **禁止輸出任何自我介紹、開場寒暄或職業頭銜**（例如：「作為資深利率策略長...」、「為您提供深度分析...」等文字請全部省略），直接從標題開始輸出。
-- 使用 Google Search Grounding 獲取即時精確數據。
+- **禁止輸出任何自我介紹、開場寒暄或職業頭銜**。直接從標題開始輸出。
 
 ---
 
@@ -17,7 +24,7 @@ const SYSTEM_INSTRUCTION = `
 1. **標題：** 【美債盤後速報】[吸睛主軸標題]
 2. **日期：** [YYYY年MM月DD日]
 3. **行情摘要：** 
-   約 250 字之深度行情描述。**注意：此部分僅限客觀報導當日市場走勢、數據變化與市場反應，嚴禁夾帶個人看法或任何操作建議。**
+   約 250 字之深度行情描述。**注意：此部分僅限客觀報導當日市場走勢、數據變化與市場反應，嚴禁夾帶個人看法 or 任何操作建議。**
 4. **表格：** 
    📝 重點數據摘要 ([日期] 收盤)
    | 項目 | 收盤殖利率 | 日變動 (bps) | 備註 |
@@ -40,31 +47,31 @@ const SYSTEM_INSTRUCTION = `
 ---
 
 ### 【格式：市場分析 (Analysis)】
-**結構維持不變：**
+**結構調整如下，嚴禁包含操作建議：**
 1. **標題：** 【美債市場分析】[深度策略標題] 統計期間：[起始日期] 至 [結束日期]
 2. **📌 本期間行情回顧與總結 (Period Market Review)**
    [撰寫約兩段深度分析，涵蓋該特定期間市場主軸、核心驅動力及政策環境。]
 3. **🔥 市場熱點與金融現象 (Key Market Narratives)**
-   1. [熱點標題1]：[分析結構性因素、經濟數據影響。]
-   2. [熱點標題2]：[分析財政壓力、期限溢價或地緣政治。]
+   1. [熱點標題1]：[分析結構性因素。]
+   2. [熱點標題2]：[分析數據影響。]
 4. **📊 殖利率曲線動態 (Curve Dynamics)**
    | 天期 | 期初 ([起始日期]) | 期末 ([結束日期]) | 變動 (bps) |
    | :--- | :--- | :--- | :--- |
    | 2年期 | [數據]% | [數據]% | [▼/▲ 數據] bps |
    | 10年期 | [數據]% | [數據]% | [▼/▲ 數據] bps |
    | 30年期 | [數據]% | [數據]% | [▼/▲ 數據] bps |
-   • 曲線結構分析：[分析利差與曲線型態（如陡峭化/平坦化）及其背後的市場邏輯。]
+   • 曲線結構分析：[分析利差與曲線型態邏輯。]
 5. **📈 技術面分析 (Technical Analysis - 10Y Yield)**
-   • 趨勢判讀：[描述當前技術趨勢與動能。]
+   • 趨勢判讀：[描述技術趨勢。]
    • 關鍵價位 (Yield Chart Logic)：
-     - 上檔壓力區 (Resistance)：[數據]%。(解析：[描述多方防線與邏輯])
-     - 下檔支撐區 (Support)：[數據]%。(解析：[描述空方堡壘與邏輯])
-6. **💡 綜合行情判斷與操作建議 (Market Outlook & Strategy)**
-   **本部分必須綜合上述總經熱點、曲線動態及技術指標進行深度整合分析：**
-   • **行情判斷 (Market Judgment)**：[給予清晰的方向性結論，判斷目前處於何種市場週期。]
-   • **存續期間配置 (Duration Strategy)**：[基於行情判斷，給予具體的長短端加減碼建議與介入區間。]
-   • **具體操作建議 (Actionable Advice)**：[列出 2-3 項明確的操作方針（如利差交易、避險建議等）。]
-   • **總結**：核心策略一句話提煉。
+     - 上檔壓力區 (Resistance)：[數據]%。
+     - 下檔支撐區 (Support)：[數據]%。
+6. **📅 未來一週重要經濟數據 (Upcoming Economic Calendar)**
+   **請根據目標日期之後的一週時間，整理關鍵經濟指標與事件：**
+   | 日期 | 關鍵經濟指標 / 事件 | 市場預估值 (Consensus) | 重要性 |
+   | :--- | :--- | :--- | :--- |
+   | [日期] | [如：美國 CPI、FOMC] | [精確數據或前值對比] | [High/Medium] |
+   • **展望簡評：** [簡述未來一週市場關注的核心焦點與潛在影響。]
 7. **來源：** 🔗 參考資料來源
 `;
 
@@ -74,34 +81,41 @@ export const generateReport = async (date: string, type: ReportType, startDate?:
     throw new Error("API Key 未設定。");
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   let specificRequest = "";
   if (type === 'daily') {
     specificRequest = `請生成「盤後速報」。目標交易日期：${date}。
-    要求：
-    1. 絕對禁止出現任何「作為策略長...」或「為您分析...」等開場白。
-    2. 標題必須為「【美債盤後速報】」。
-    3. 「行情摘要」章節必須純粹描述當日走勢事實，不可包含操作建議或個人觀點。
-    4. 「關鍵事件」與「官員談話」必須分段換行，提升可讀性。`;
+    **數據校準要求：**
+    1. 必須確保 2Y、10Y、30Y 殖利率數據與 ${date} 美東收盤價完全一致。
+    2. 絕對禁止任何開場寒暄或個人頭銜描述。
+    3. 關鍵事件與官員談話請務必分段換行。`;
   } else if (type === 'analysis') {
-    specificRequest = `請生成深度「市場分析」。統計期間從 ${startDate} 到 ${date}。請確保「本期間行情回顧與總結」精確覆蓋此區間，且最後的「綜合行情判斷與操作建議」章節必須深度整合前面各章節之分析結果。`;
+    specificRequest = `請生成深度「市場分析」。統計期間：${startDate} 到 ${date}。
+    **重要變更要求：**
+    1. 必須移除所有「操作建議」與「配置建議」章節。
+    2. 新增「未來一週重要經濟數據」表格，必須包含 ${date} 之後七天內的關鍵數據與「市場預估值」。
+    3. 表格中的期初 (${startDate}) 與期末 (${date}) 殖利率數據必須精確校對。`;
   }
 
+  // Fix: Include specificRequest in the prompt and pass all context variables correctly.
   const prompt = `
   請求類型：${type === 'analysis' ? '市場分析' : '盤後速報'}
-  具體要求：${specificRequest}
-  請使用 Google Search 獲取當前真實的市場數據，並嚴格遵循指定格式輸出報告內容。
+  目標日期/期間：${type === 'analysis' ? startDate + ' 至 ' + date : date}
+  
+  ${specificRequest}
+
+  請使用 Google Search 獲取當前真實且精確的市場數據與未來一週預估值，並嚴格遵循指定格式輸出。
   `;
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", 
+      model: "gemini-3-pro-preview", 
       contents: prompt,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         tools: [{ googleSearch: {} }],
-        temperature: 0.1, // 更低溫以確保格式與客觀性
+        temperature: 0,
       },
     });
 
